@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home / Thandi Bot</title>
+</head>
+<body>
+{% for bot in object_list %}
+    {{bot.name}}
+{% empty %}
+    Oh no! There are no bot's yet. Quick, create one!
+{% endfor %}
+</body>
+</html>
