@@ -1,0 +1,16 @@
+.logs {
+    color: #999;
+    background: black;
+    font-family: monospace;
+    white-space: pre;
+    height: 600px;
+    width: 100%;
+}
+
+
+.indicator {
+    background: black;
+    color: #999;
+    font-family: monospace;
+    text-decoration: none;
+}
