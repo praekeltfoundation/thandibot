@@ -6,6 +6,9 @@ from datetime import datetime, date
 from django.db import models
 
 
+START_DATE = date(2017, 5, 1)
+
+
 class Subscription(models.Model):
     name = models.TextField()
     monday = models.BooleanField()
@@ -24,7 +27,8 @@ class Subscription(models.Model):
 
     def get_num_days_for(self, day_of_week, y, m, month):
         '''
-        TODO: exclude days greater than `now()`
+        Returns the number of times `day of week` appears in the month
+        e.g there are 5 Thursdays in June 2017
         '''
         return len([
             1 for i in month
@@ -42,19 +46,18 @@ class Subscription(models.Model):
 
     def get_total_projected(self):
         months = []
-        start_date = date(2017, 5, 1)
         now = datetime.now().date()
-        for y in range(start_date.year, datetime.now().year + 1):
+        for y in range(START_DATE.year, datetime.now().year + 1):
             for m in range(1, 13):
                 if date(y, m, now.day) <= now and \
-                        date(y, m, now.day) >= start_date:
+                        date(y, m, now.day) >= START_DATE:
                     months.append((y, m, monthcalendar(y, m)))
 
         return sum(
             self.get_current_projected(y, m, month) for y, m, month in months)
 
     def __str__(self):
-        days = [name for day, name in self.get_days() if day]
+        days = [str(dow) for day, dow in self.get_days() if day]
         return '%(name)s %(schedule)s' % {
             'name': self.name,
             'schedule': '(%s)' % ', '.join(days) if any(days) else ''
@@ -82,6 +85,11 @@ class Bot(models.Model):
             rel.get_current_actuals()
             for rel in self.botsubscriptionrelation_set.all()])
 
+    def get_total_actuals(self):
+        return sum([
+            rel.get_total_actuals()
+            for rel in self.botsubscriptionrelation_set.all()])
+
 
 class BotSubscriptionRelation(models.Model):
     SMS = 'sms'
@@ -104,9 +112,15 @@ class BotSubscriptionRelation(models.Model):
         now = datetime.now().date()
         start_day, end_day = monthrange(now.year, now.month)
         return self.record_set.filter(
-            received_at__gte=datetime(now.year, now.month, start_day),
-            received_at__lte=datetime(now.year, now.month, end_day)
-        ).count()
+            received_at__gte=datetime(now.year, now.month, start_day)).count()
+
+    def get_total_actuals(self):
+        '''
+        Returnsl all records to date
+        '''
+        now = datetime.now().date()
+        start_day, end_day = monthrange(now.year, now.month)
+        return self.record_set.filter(received_at__gte=START_DATE).count()
 
     def __str__(self):
         return '%s (%s) - %s' % (self.bot, self.channel, self.subscription)
