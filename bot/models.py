@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from calendar import monthrange, monthcalendar
-from datetime import datetime
+from datetime import datetime, date
 
 from django.db import models
 
@@ -22,14 +22,36 @@ class Subscription(models.Model):
             (self.thursday, 4),
             (self.friday, 5)]
 
-    def get_num_days_for(self, day_of_week):
-        month = monthcalendar(
-            datetime.now().year, datetime.now().month)
-        return len([1 for i in month if i[day_of_week] != 0])
+    def get_num_days_for(self, day_of_week, y, m, month):
+        '''
+        TODO: exclude days greater than `now()`
+        '''
+        return len([
+            1 for i in month
+            if i[day_of_week] != 0 and
+            date(y, m, i[day_of_week]) <= datetime.now().date()])
 
-    def get_current_projected(self):
+    def get_current_projected(self, y=None, m=None, month=None):
+        if not month:
+            y = datetime.now().year
+            m = datetime.now().month
+            month = monthcalendar(y, m)
         return sum([
-            self.get_num_days_for(num) for day, num in self.get_days() if day])
+            self.get_num_days_for(dow, y, m, month)
+            for day, dow in self.get_days() if day])
+
+    def get_total_projected(self):
+        months = []
+        start_date = date(2017, 5, 1)
+        now = datetime.now().date()
+        for y in range(start_date.year, datetime.now().year + 1):
+            for m in range(1, 13):
+                if date(y, m, now.day) <= now and \
+                        date(y, m, now.day) >= start_date:
+                    months.append((y, m, monthcalendar(y, m)))
+
+        return sum(
+            self.get_current_projected(y, m, month) for y, m, month in months)
 
     def __str__(self):
         days = [name for day, name in self.get_days() if day]
@@ -48,6 +70,11 @@ class Bot(models.Model):
     def get_current_projected(self):
         return sum([
             rel.subscription.get_current_projected()
+            for rel in self.botsubscriptionrelation_set.all()])
+
+    def get_total_projected(self):
+        return sum([
+            rel.subscription.get_total_projected()
             for rel in self.botsubscriptionrelation_set.all()])
 
     def get_current_actuals(self):
