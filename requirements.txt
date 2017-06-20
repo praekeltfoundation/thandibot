@@ -1,0 +1,5 @@
+Django>=1.9,<1.10
+dj-database-url
+djangorestframework
+raven<7.0
+psycopg2
