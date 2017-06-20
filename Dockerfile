@@ -9,4 +9,4 @@ RUN pip install -e .
 
 RUN django-admin collectstatic --noinput
 
-CMD ["thandi.wsgi:application", "--timeout", "1800"]
+CMD ["thandibot.wsgi:application", "--timeout", "1800"]
