@@ -1,56 +1,102 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block content %}
-<div class="row">
 {% for bot in object_list %}
+<div class="row">
     <div class="col-md-4">
-          <!-- Widget: user widget style 1 -->
-          <div class="box box-widget widget-user">
-            <!-- Add the bg color to the header using any of the bg-* classes -->
-            <div class="widget-user-header bg-aqua-active">
-              <h3 class="widget-user-username">{{bot.name}}</h3>
-              <h5 class="widget-user-desc">Summary for {% now 'F' %}</h5>
-            </div>
-            <div class="widget-user-image">
-              <img class="img-circle" src="{% static 'img/default-profile.png' %}" alt="User Avatar">
-            </div>
-            <div class="box-footer">
-              <div class="row">
-                <div class="col-sm-4 border-right">
-                  <div class="description-block">
-                    <h5 class="description-header">
-                    {{bot.get_current_actuals}} / {{bot.get_current_projected}}</h5>
-                    <span class="description-text">Total messages this Month</span>
-                  </div>
-                  <!-- /.description-block -->
-                </div>
-                <!-- /.col -->
-                <div class="col-sm-4 border-right">
-                  <div class="description-block">
-                    <h5 class="description-header">
-                    {{bot.get_total_actuals}} / {{bot.get_total_projected}}</h5>
-                    <span class="description-text">Total messages since May 2017</span>
-                  </div>
-                  <!-- /.description-block -->
-                </div>
-                <!-- /.col -->
-                <div class="col-sm-4">
-                  <div class="description-block">
-                    <h5 class="description-header">35</h5>
-                    <span class="description-text">PRODUCTS</span>
-                  </div>
-                  <!-- /.description-block -->
-                </div>
-                <!-- /.col -->
+      <!-- Widget: user widget style 1 -->
+      <div class="box box-widget widget-user">
+        <!-- Add the bg color to the header using any of the bg-* classes -->
+        <div class="widget-user-header {% cycle 'bg-aqua-active' 'bg-orange' 'bg-teal' 'bg-red' %}">
+          <h3 class="widget-user-username pull-right">32 Weeks</h3>
+          <h3 class="widget-user-username">{{bot.name}}</h3>
+          <h5 class="widget-user-desc">Summary for {% now 'F' %}</h5>
+        </div>
+        <div class="widget-user-image">
+          <img class="img-circle" src="{% static 'img/avatar3.png' %}" alt="User Avatar">
+        </div>
+        <div class="box-footer">
+          <div class="row">
+            <div class="col-sm-4 border-right">
+              <div class="description-block">
+                 <input type="text" class="dial" data-readOnly="true" data-width="80" data-height="80" data-min=0 data-max={{bot.get_current_projected}} value={{bot.get_current_actuals}} />
+
+                <span class="description-text">{% now 'F' %} <br/><small>(so far)</small></span>
               </div>
-              <!-- /.row -->
+              <!-- /.description-block -->
             </div>
+            <!-- /.col -->
+            <div class="col-sm-4 border-right">
+              <div class="description-block">
+                <input type="text" class="dial" data-readOnly="true" data-width="80" data-height="80" data-min=0 data-max={{bot.get_total_projected}} value={{bot.get_total_actuals}} />
+                <span class="description-text">Total <br/><small>(since May'17)</small></span>
+              </div>
+              <!-- /.description-block -->
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4">
+              <div class="description-block">
+
+                <input type="text" class="dial" data-readOnly="true" data-width="80" data-height="80" data-min=0 data-max={{bot.get_total_projected}} value={{bot.get_total_delivery_reports}} />
+                <span class="description-text">Delivery Confirmed</span>
+              </div>
+              <!-- /.description-block -->
+            </div>
+            <!-- /.col -->
           </div>
-          <!-- /.widget-user -->
-        </div><!-- /.col -->
+          <!-- /.row -->
+        </div>
+      </div>
+      <!-- /.widget-user -->
+    </div><!-- /.col -->
+    <div class="col-md-6">
+    <div class="box box-info">
+    <div class="box-body">
+    <div class="chart">
+    <canvas id="bot{{bot.id}}" height=280></canvas>
+    </div></div></div></div>
+    <script type="text/javascript">
+        // var data = '';
+        var ctx = $("#bot{{bot.id}}").get(0).getContext("2d");
+        // Get context with jQuery - using jQuery's .get() method.
+        // var areaChartCanvas = $("#areaChart").get(0).getContext("2d");
+        // This will get the first returned node in the jQuery collection.
+        var areaChart = new Chart(ctx);
+
+        var areaChartData = {
+          labels: ["January", "February", "March", "April", "May", "June", "July"],
+          datasets: [
+            {
+              label: "Electronics",
+              fillColor: "rgba(210, 214, 222, 1)",
+              strokeColor: "rgba(210, 214, 222, 1)",
+              pointColor: "rgba(210, 214, 222, 1)",
+              pointStrokeColor: "#c1c7d1",
+              pointHighlightFill: "#fff",
+              pointHighlightStroke: "rgba(220,220,220,1)",
+              data: [65, 59, 80, 81, 56, 55, 40]
+            },
+            {
+              label: "Digital Goods",
+              fillColor: "rgba(60,141,188,0.9)",
+              strokeColor: "rgba(60,141,188,0.8)",
+              pointColor: "#3b8bba",
+              pointStrokeColor: "rgba(60,141,188,1)",
+              pointHighlightFill: "#fff",
+              pointHighlightStroke: "rgba(60,141,188,1)",
+              data: [28, 48, 40, 19, 86, 27, 90]
+            }
+          ]
+        };
+
+        //Create the line chart
+        //areaChart.Line(areaChartData);
+    </script>
+</div>
 {% empty %}
     Oh no! There are no bot's yet. Quick, create one!
 {% endfor %}
-
-</div>
+<script type="text/javascript">
+$('.dial').knob();
+</script>
 {% endblock %}

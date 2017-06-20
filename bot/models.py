@@ -90,6 +90,16 @@ class Bot(models.Model):
             rel.get_total_actuals()
             for rel in self.botsubscriptionrelation_set.all()])
 
+    def get_total_delivery_reports(self):
+        return sum([
+            rel.get_total_delivery_reports()
+            for rel in self.botsubscriptionrelation_set.all()])
+
+    def get_all_records(self):
+        rel_pks = self.botsubscriptionrelation_set.all().values_list(
+            'pk', flat=True)
+        return Record.objects.filter(bot_subcription_relation__pk__in=rel_pks)
+
 
 class BotSubscriptionRelation(models.Model):
     SMS = 'sms'
@@ -116,11 +126,20 @@ class BotSubscriptionRelation(models.Model):
 
     def get_total_actuals(self):
         '''
-        Returnsl all records to date
+        Returns all records to date
         '''
         now = datetime.now().date()
         start_day, end_day = monthrange(now.year, now.month)
         return self.record_set.filter(received_at__gte=START_DATE).count()
+
+    def get_total_delivery_reports(self):
+        '''
+        Returns all records to date with an affirmitive delivery report
+        '''
+        now = datetime.now().date()
+        start_day, end_day = monthrange(now.year, now.month)
+        return self.record_set.filter(
+            received_at__gte=START_DATE, delivery_report=True).count()
 
     def __str__(self):
         return '%s (%s) - %s' % (self.bot, self.channel, self.subscription)
@@ -133,6 +152,17 @@ class Record(models.Model):
     received_at = models.DateTimeField()
     tries = models.IntegerField(default=1)
     delivery_report = models.BooleanField(default=True)
+
+    @property
+    def to_addr(self):
+        return self.bot_subcription_relation.urn
+
+    @property
+    def channel(self):
+        return self.bot_subcription_relation.channel
+
+    def __to_js(self):
+        return '{x: dow, y: time}'
 
     def __str__(self):
         return '%s @ %s' % (self.bot_subcription_relation, self.received_at)

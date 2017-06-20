@@ -18,10 +18,11 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.conf.urls.static import static
 
-from bot.views import BotListView
+from bot.views import BotListView, EventCreate
 
 urlpatterns = [
     url(r'^$', BotListView.as_view(), name='home'),
+    url(r'^api/v1/event/$', EventCreate.as_view()),
     url(r'^admin/', admin.site.urls),
 ]
 
