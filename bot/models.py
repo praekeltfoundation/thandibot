@@ -94,9 +94,9 @@ class Bot(models.Model):
             rel.subscription.get_total_projected()
             for rel in self.botsubscriptionrelation_set.all()])
 
-    def get_current_actuals(self):
+    def get_current_month_actuals(self):
         return sum([
-            rel.get_current_actuals()
+            rel.get_current_month_actuals()
             for rel in self.botsubscriptionrelation_set.all()])
 
     def get_total_actuals(self):
@@ -129,7 +129,7 @@ class BotSubscriptionRelation(models.Model):
     urn = models.CharField(max_length=128, blank=True)
     selected_language = models.CharField(max_length=128, blank=True, null=True)
 
-    def get_current_actuals(self, now=None):
+    def get_current_month_actuals(self, now=None):
         '''
         Returnsl all records for the current month
         '''
