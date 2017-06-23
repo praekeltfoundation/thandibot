@@ -18,16 +18,20 @@ class Subscription(models.Model):
     friday = models.BooleanField(default=False)
 
     @classmethod
-    def get_num_days_for(cls, day_of_week, y, m):
+    def get_num_days_for(cls, day_of_week, y, m, now=None):
         '''
         Returns the number of times `day of week` appears in the month
         e.g there are 5 Thursdays in June 2017
         '''
+        if not now:
+            now = datetime.now()
+
         month = monthcalendar(y, m)
+
         return len([
             1 for i in month
-            if i[day_of_week] != 0 and
-            date(y, m, i[day_of_week]) <= datetime.now().date()])
+            if i[day_of_week - 1] != 0 and
+            date(y, m, i[day_of_week - 1]) <= now.date()])
 
     def get_days(self):
         return [
@@ -38,25 +42,33 @@ class Subscription(models.Model):
                 (self.thursday, 4),
                 (self.friday, 5)] if is_day]
 
-    def get_current_projected(self, y=None, m=None, month=None):
+    def get_current_month_projected(
+            self, y=None, m=None, month=None, now=None):
+        if not now:
+            now = datetime.now()
+
         if not month:
-            y = datetime.now().year
-            m = datetime.now().month
+            y = now.year
+            m = now.month
+
         return sum([
-            self.get_num_days_for(dow, y, m)
+            self.get_num_days_for(dow, y, m, now)
             for day, dow in self.get_days()])
 
-    def get_total_projected(self):
+    def get_total_projected(self, now=None):
+        if not now:
+            now = datetime.now()
+
         months = []
-        now = datetime.now().date()
-        for y in range(START_DATE.year, datetime.now().year + 1):
+        for y in range(START_DATE.year, now.year + 1):
             for m in range(1, 13):
-                if date(y, m, now.day) <= now and \
+                if date(y, m, now.day) <= now.date() and \
                         date(y, m, now.day) >= START_DATE:
                     months.append((y, m, monthcalendar(y, m)))
 
         return sum(
-            self.get_current_projected(y, m, month) for y, m, month in months)
+            self.get_current_month_projected(y, m, month, now)
+            for y, m, month in months)
 
     def __str__(self):
         days = [str(dow) for day, dow in self.get_days()]
@@ -72,9 +84,9 @@ class Bot(models.Model):
     def __str__(self):
         return self.name
 
-    def get_current_projected(self):
+    def get_current_month_projected(self):
         return sum([
-            rel.subscription.get_current_projected()
+            rel.subscription.get_current_month_projected()
             for rel in self.botsubscriptionrelation_set.all()])
 
     def get_total_projected(self):
@@ -117,28 +129,34 @@ class BotSubscriptionRelation(models.Model):
     urn = models.CharField(max_length=128, blank=True)
     selected_language = models.CharField(max_length=128, blank=True, null=True)
 
-    def get_current_actuals(self):
+    def get_current_actuals(self, now=None):
         '''
         Returnsl all records for the current month
         '''
-        now = datetime.now().date()
+        if not now:
+            now = datetime.now().date()
+
         start_day, end_day = monthrange(now.year, now.month)
         return self.record_set.filter(
             received_at__gte=datetime(now.year, now.month, start_day)).count()
 
-    def get_total_actuals(self):
+    def get_total_actuals(self, now=None):
         '''
         Returns all records to date
         '''
-        now = datetime.now().date()
+        if not now:
+            now = datetime.now().date()
+
         start_day, end_day = monthrange(now.year, now.month)
         return self.record_set.filter(received_at__gte=START_DATE).count()
 
-    def get_total_delivery_reports(self):
+    def get_total_delivery_reports(self, now=None):
         '''
         Returns all records to date with an affirmitive delivery report
         '''
-        now = datetime.now().date()
+        if not now:
+            now = datetime.now().date()
+
         start_day, end_day = monthrange(now.year, now.month)
         return self.record_set.filter(
             received_at__gte=START_DATE, delivery_report=True).count()
