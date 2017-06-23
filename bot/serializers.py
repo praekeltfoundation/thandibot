@@ -30,7 +30,8 @@ class EventSerializer(serializers.Serializer):
             record, _ = Record.objects.get_or_create(
                 bot_subcription_relation=rel,
                 message=data['message_uuid'],
-                received_at=data['timestamp'],
-                defaults={'record_identifier': data['uuid']})
+                defaults={
+                    'record_identifier': data['uuid'],
+                    'received_at': data['timestamp']})
 
         return validated_data
