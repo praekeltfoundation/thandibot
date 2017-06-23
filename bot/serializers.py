@@ -4,8 +4,9 @@ from .models import Record, BotSubscriptionRelation
 from rest_framework import serializers
 
 
-class RecordSerializer(serializers.Serializer):
+class WhatsAppRecordSerializer(serializers.Serializer):
     message_uuid = serializers.CharField()
+    uuid = serializers.CharField()
     status = serializers.CharField()
     to_addr = serializers.CharField()
     timestamp = serializers.DateTimeField(allow_null=True)
@@ -13,7 +14,7 @@ class RecordSerializer(serializers.Serializer):
 
 
 class EventSerializer(serializers.Serializer):
-    data = RecordSerializer()
+    data = WhatsAppRecordSerializer()
 
     def create(self, validated_data):
         data = validated_data['data']
@@ -29,6 +30,7 @@ class EventSerializer(serializers.Serializer):
             record, _ = Record.objects.get_or_create(
                 bot_subcription_relation=rel,
                 message=data['message_uuid'],
-                received_at=data['timestamp'])
+                received_at=data['timestamp'],
+                defaults={'record_identifier': data['uuid']})
 
         return validated_data

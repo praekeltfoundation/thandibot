@@ -148,6 +148,7 @@ class BotSubscriptionRelation(models.Model):
 class Record(models.Model):
     bot_subcription_relation = models.ForeignKey(BotSubscriptionRelation)
     message = models.TextField()
+    record_identifier = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     received_at = models.DateTimeField()
     tries = models.IntegerField(default=1)
