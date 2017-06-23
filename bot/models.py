@@ -11,38 +11,40 @@ START_DATE = date(2017, 5, 1)
 
 class Subscription(models.Model):
     name = models.TextField()
-    monday = models.BooleanField()
-    tuesday = models.BooleanField()
-    wednesday = models.BooleanField()
-    thursday = models.BooleanField()
-    friday = models.BooleanField()
+    monday = models.BooleanField(default=False)
+    tuesday = models.BooleanField(default=False)
+    wednesday = models.BooleanField(default=False)
+    thursday = models.BooleanField(default=False)
+    friday = models.BooleanField(default=False)
 
-    def get_days(self):
-        return [
-            (self.monday, 1),
-            (self.tuesday, 2),
-            (self.wednesday, 3),
-            (self.thursday, 4),
-            (self.friday, 5)]
-
-    def get_num_days_for(self, day_of_week, y, m, month):
+    @classmethod
+    def get_num_days_for(cls, day_of_week, y, m):
         '''
         Returns the number of times `day of week` appears in the month
         e.g there are 5 Thursdays in June 2017
         '''
+        month = monthcalendar(y, m)
         return len([
             1 for i in month
             if i[day_of_week] != 0 and
             date(y, m, i[day_of_week]) <= datetime.now().date()])
 
+    def get_days(self):
+        return [
+            (is_day, day_of_week) for is_day, day_of_week in [
+                (self.monday, 1),
+                (self.tuesday, 2),
+                (self.wednesday, 3),
+                (self.thursday, 4),
+                (self.friday, 5)] if is_day]
+
     def get_current_projected(self, y=None, m=None, month=None):
         if not month:
             y = datetime.now().year
             m = datetime.now().month
-            month = monthcalendar(y, m)
         return sum([
-            self.get_num_days_for(dow, y, m, month)
-            for day, dow in self.get_days() if day])
+            self.get_num_days_for(dow, y, m)
+            for day, dow in self.get_days()])
 
     def get_total_projected(self):
         months = []
@@ -57,7 +59,7 @@ class Subscription(models.Model):
             self.get_current_projected(y, m, month) for y, m, month in months)
 
     def __str__(self):
-        days = [str(dow) for day, dow in self.get_days() if day]
+        days = [str(dow) for day, dow in self.get_days()]
         return '%(name)s %(schedule)s' % {
             'name': self.name,
             'schedule': '(%s)' % ', '.join(days) if any(days) else ''
