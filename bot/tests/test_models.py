@@ -22,6 +22,8 @@ class SubscriptionsTestCase(TestCase):
             name='Tuesdays and Thursdays', tuesday=True, thursday=True)
         self.assertEquals(tues_thurs.get_days(), [(True, 2), (True, 4)])
 
+        self.assertEquals(str(mon), 'Monday Only (1)')
+
     def test_number_of_mondays_in_may_2017(self):
         self.assertEquals(Subscription.get_num_days_for(1, 2017, 5), 5)
 
@@ -37,11 +39,13 @@ class SubscriptionsTestCase(TestCase):
             thursday=True, friday=True)
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(everyday.get_current_month_projected(now=now), 14)
+        self.assertEquals(str(everyday), 'Everyday (1, 2, 3, 4, 5)')
 
     def test_get_project_number_of_messages_for_mondays_subscription(self):
         mon = Subscription.objects.create(name='Mondays', monday=True)
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(mon.get_current_month_projected(now=now), 3)
+        self.assertEquals(str(mon), 'Mondays (1)')
 
     def test_get_project_number_of_messages_for_tues_thurs_subscription(self):
         tues_thurs = Subscription.objects.create(
@@ -85,6 +89,7 @@ class BotTestCase(TestCase):
 
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(bot.get_current_month_actuals(now=now), 4)
+        self.assertEquals(str(bot), 'Mrs Test User')
 
     def test_get_total_actuals_for_tues_thurs(self):
         bot = Bot.objects.create(name='Mrs Test User')
@@ -108,6 +113,9 @@ class BotTestCase(TestCase):
 
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(bot.get_total_actuals(now=now), 6)
+        self.assertEquals(str(bot), 'Mrs Test User')
+        self.assertEquals(
+            str(bot_rel), 'Mrs Test User (sms) - Tuesdays, Thursdays (2, 4)')
 
     def test_get_total_delivery_reports_for_tues_thurs(self):
         bot = Bot.objects.create(name='Mrs Test User')
@@ -153,3 +161,22 @@ class BotTestCase(TestCase):
 
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(bot.get_current_month_projected(now=now), 6)
+
+
+class RecordTestCase(TestCase):
+    def test_record_properties(self):
+        bot = Bot.objects.create(name='Mrs Test User')
+        tues_thurs = Subscription.objects.create(
+            name='Tuesdays, Thursdays', tuesday=True, thursday=True)
+        bot_rel = BotSubscriptionRelation.objects.create(
+            bot=bot, subscription=tues_thurs, urn='+27820000000')
+        record = Record.objects.create(
+            bot_subcription_relation=bot_rel,
+            message='foo',
+            received_at=datetime(2017, 6, 20))
+        self.assertEquals(
+            str(record),
+            'Mrs Test User (sms) - Tuesdays, Thursdays (2, 4) '
+            '@ 2017-06-20 00:00:00')
+        self.assertEquals(record.to_addr, '+27820000000')
+        self.assertEquals(record.channel, 'sms')

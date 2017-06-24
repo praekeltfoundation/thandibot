@@ -44,7 +44,7 @@ class Subscription(models.Model):
 
     def get_current_month_projected(
             self, y=None, m=None, month=None, now=None):
-        if not now:
+        if not now:  # pragma: no cover
             now = datetime.now()
 
         if not month:
@@ -56,7 +56,7 @@ class Subscription(models.Model):
             for day, dow in self.get_days()])
 
     def get_total_projected(self, now=None):
-        if not now:
+        if not now:  # pragma: no cover
             now = datetime.now()
 
         months = []
@@ -148,7 +148,7 @@ class BotSubscriptionRelation(models.Model):
         '''
         Returnsl all records for the current month
         '''
-        if not now:
+        if not now:  # pragma: no cover
             now = datetime.now().date()
 
         start_day, end_day = monthrange(now.year, now.month)
@@ -159,7 +159,7 @@ class BotSubscriptionRelation(models.Model):
         '''
         Returns all records to date
         '''
-        if not now:
+        if not now:  # pragma: no cover
             now = datetime.now().date()
 
         start_day, end_day = monthrange(now.year, now.month)
@@ -169,7 +169,7 @@ class BotSubscriptionRelation(models.Model):
         '''
         Returns all records to date with an affirmitive delivery report
         '''
-        if not now:
+        if not now:  # pragma: no cover
             now = datetime.now().date()
 
         start_day, end_day = monthrange(now.year, now.month)
@@ -196,9 +196,6 @@ class Record(models.Model):
     @property
     def channel(self):
         return self.bot_subcription_relation.channel
-
-    def __to_js(self):
-        return '{x: dow, y: time}'
 
     def __str__(self):
         return '%s @ %s' % (self.bot_subcription_relation, self.received_at)
