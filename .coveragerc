@@ -1,0 +1,2 @@
+[run]
+omit = **/tests/*,**/migrations/*,bot/apps.py,thandibot/wsgi.py
