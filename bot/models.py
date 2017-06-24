@@ -84,29 +84,44 @@ class Bot(models.Model):
     def __str__(self):
         return self.name
 
-    def get_current_month_projected(self):
+    def get_current_month_projected(self, now=None):
+        if not now:
+            now = datetime.now()
+
         return sum([
-            rel.subscription.get_current_month_projected()
+            rel.subscription.get_current_month_projected(now=now)
             for rel in self.botsubscriptionrelation_set.all()])
 
-    def get_total_projected(self):
+    def get_total_projected(self, now=None):
+        if not now:
+            now = datetime.now()
+
         return sum([
-            rel.subscription.get_total_projected()
+            rel.subscription.get_total_projected(now=now)
             for rel in self.botsubscriptionrelation_set.all()])
 
-    def get_current_month_actuals(self):
+    def get_current_month_actuals(self, now=None):
+        if not now:
+            now = datetime.now()
+
         return sum([
-            rel.get_current_month_actuals()
+            rel.get_current_month_actuals(now=now)
             for rel in self.botsubscriptionrelation_set.all()])
 
-    def get_total_actuals(self):
+    def get_total_actuals(self, now=None):
+        if not now:
+            now = datetime.now()
+
         return sum([
-            rel.get_total_actuals()
+            rel.get_total_actuals(now=now)
             for rel in self.botsubscriptionrelation_set.all()])
 
-    def get_total_delivery_reports(self):
+    def get_total_delivery_reports(self, now=None):
+        if not now:
+            now = datetime.now()
+
         return sum([
-            rel.get_total_delivery_reports()
+            rel.get_total_delivery_reports(now=now)
             for rel in self.botsubscriptionrelation_set.all()])
 
     def get_all_records(self):
