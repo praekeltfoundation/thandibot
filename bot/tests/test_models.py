@@ -109,6 +109,31 @@ class BotTestCase(TestCase):
         now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
         self.assertEquals(bot.get_total_actuals(now=now), 6)
 
+    def test_get_total_delivery_reports_for_tues_thurs(self):
+        bot = Bot.objects.create(name='Mrs Test User')
+        tues_thurs = Subscription.objects.create(
+            name='Tuesdays, Thursdays', tuesday=True, thursday=True)
+        bot_rel = BotSubscriptionRelation.objects.create(
+            bot=bot, subscription=tues_thurs)
+        # 2 records in May
+        for i in [4, 11]:
+            Record.objects.create(
+                bot_subcription_relation=bot_rel,
+                message='foo',
+                delivery_report=False,
+                received_at=datetime(2017, 5, i))
+
+        # 4 records in June
+        for i in [6, 8, 13, 15]:
+            Record.objects.create(
+                bot_subcription_relation=bot_rel,
+                message='foo',
+                received_at=datetime(2017, 6, i))
+
+        now = datetime(2017, 6, 20)  # fix now to 20 June, 2017
+        self.assertEquals(bot.get_total_delivery_reports(now=now), 4)
+        self.assertEquals(bot.get_all_records().count(), 6)
+
     def test_get_total_projected_for_tues_thurs(self):
         bot = Bot.objects.create(name='Mrs Test User')
         tues_thurs = Subscription.objects.create(
