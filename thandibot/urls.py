@@ -22,7 +22,7 @@ from bot.views import BotListView, EventCreate
 
 urlpatterns = [
     url(r'^$', BotListView.as_view(), name='home'),
-    url(r'^api/v1/event/$', EventCreate.as_view()),
+    url(r'^api/v1/event/$', EventCreate.as_view(), name='event-create'),
     url(r'^admin/', admin.site.urls),
 ]
 
